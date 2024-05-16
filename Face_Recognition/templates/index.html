@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition</title>
+    <style>
+        /* Your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 0;
+            background-image: url("img/face.jpg"); /* Set the background image path here */
+            background-size: cover; /* Cover the entire background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .center-button {
+            margin-top: 20px; /* Adjust as needed */
+        }
+
+        h1, h2 {
+            color: #0051a8;
+            margin-bottom: 20px; /* Added spacing below the heading */
+        }
+
+        h1, h2 {
+            animation-name: zoomIn;
+            animation-duration: 1s;
+            animation-timing-function: ease-in;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="email"],
+        input[type="text"] {
+            width: 50%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles for the modal */
+        .pop {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .pop-content {
+            background: linear-gradient(to right, rgb(154, 226, 255), rgba(255, 179, 244, 0.822));
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        /* Close button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the page</h1> <!-- Added heading here -->
+        <div class="center-button"> <!-- Added a div to center the button -->
+            <button id="authenticate" type="button">Authenticate</button>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div id="authenticateModal" class="pop">
+        <!-- Modal content -->
+        <div class="pop-content">
+        <span class="close">&times;</span>
+        <h1>Face Recognition</h1>
+        <video id="video" autoplay></video>
+        <form id="compareForm" action="#">
+            <label for="voter_id">Enter your Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+            <input type="hidden" id="image" name="image">
+            <button id="captureButton" type="submit">Capture & Compare</button>
+            <button id="loginButton" onclick="login()" disabled>Login</button>
+            <p id="message"></p> <!-- Message element -->
+            <div class="loading" id="loadingMessage">Comparing images...</div> <!-- Loading message -->
+        </form>
+    </div>
+
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("authenticateModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("authenticate");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == pop) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+        const video = document.getElementById('video');
+        const compareForm = document.getElementById('compareForm');
+        const captureButton = document.getElementById('captureButton');
+        const voteButton = document.getElementById('loginButton');
+        const message = document.getElementById('message'); // Message element
+        const loadingMessage = document.getElementById('loadingMessage'); // Loading message
+    
+        // Get user media
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                console.error('Error accessing the webcam:', error);
+            });
+    
+        // Capture image from webcam and set it as form data
+        compareForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const image = canvas.toDataURL('image/jpeg');
+            document.getElementById('image').value = image;
+    
+            // Pause the video
+            video.pause();
+    
+            // Show loading message
+            loadingMessage.style.display = 'block';
+    
+            // Send AJAX request to compare images
+            fetch('/compare', {
+                method: 'POST',
+                body: new URLSearchParams(new FormData(compareForm))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.match) {
+                    // Enable login button
+                    loginButton.disabled = false;
+                    // Display match message
+                    message.textContent = "Images matched. You can login now!";
+                } else {
+                    // Disable login button
+                    loginButton.disabled = true;
+                    // Display mismatch message
+                    message.textContent = "Images not matched. Capture the image until matched.";
+                }
+                // Hide loading message
+                loadingMessage.style.display = 'none';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Function to handle login button click
+        function login() {
+            // Add your login handling logic here
+            alert('Login button clicked!');
+        }
+    </script>
+    
+</body>
+</html>
