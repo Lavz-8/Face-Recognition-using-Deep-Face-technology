@@ -14,7 +14,7 @@ This project implements a highly accurate face recognition system utilizing Deep
 1. **Clone this repository to your local machine:**
 
     ```bash
-    git clone https://github.com/yourusername/face-recognition-system.git
+    git clone https://github.com/Lavz-8/face-recognition-system.git
     ```
 
 2. **Install the required dependencies by running:**
@@ -33,3 +33,6 @@ This project implements a highly accurate face recognition system utilizing Deep
 
 3. **Deployment:**
     - Integrate the trained model into your application for real-time face recognition.
+
+## Credits
+This Project was created by **Lavanya Varadharajan**.
